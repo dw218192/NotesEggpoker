@@ -69,6 +69,7 @@ const config: QuartzConfig = {
       Plugin.TableOfContents(),
       Plugin.CrawlLinks({ markdownLinkResolution: "shortest" }),
       Plugin.Description(),
+      Plugin.Comments({ commentServerURL: "https://comments.eggpoker.com" }),
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
