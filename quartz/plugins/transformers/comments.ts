@@ -58,7 +58,12 @@ export const Remark42: QuartzTransformerPlugin<Options> = (opts?: Options) => {
 
   document.addEventListener('nav', () => {
     this.initRemark42()
-  })
+  });
+
+  document.addEventListener('themechange', (e) => {
+    remark_config.theme = e.detail.theme;
+    this.initRemark42()
+  });
 `
   scripts.push({ script: spaRouting, loadTime: "afterDOMReady", contentType: "inline" })
 
