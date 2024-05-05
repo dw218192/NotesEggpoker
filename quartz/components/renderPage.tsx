@@ -16,6 +16,7 @@ interface RenderComponents {
   pageBody: QuartzComponent
   left: QuartzComponent[]
   right: QuartzComponent[]
+  afterBody: QuartzComponent[]
   footer: QuartzComponent
 }
 
@@ -189,6 +190,7 @@ export function renderPage(
     pageBody: Content,
     left,
     right,
+    afterBody,
     footer: Footer,
   } = components
   const Header = HeaderConstructor()
@@ -232,6 +234,12 @@ export function renderPage(
                 </div>
               </div>
               <Content {...componentData} />
+              <hr />
+              <div class="popover-hint">
+                {afterBody.map((BodyComponent) => (
+                  <BodyComponent {...componentData} />
+                ))}
+              </div>
             </div>
             {RightComponent}
           </Body>
