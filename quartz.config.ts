@@ -73,6 +73,9 @@ const config: QuartzConfig = {
         host: "https://comments.eggpoker.com",
         site_id: "eggpoker",
         components: ["embed"],
+        show_email_subscription : false,
+        show_rss_subscription : false,
+        no_footer : true,
       })
     ],
     filters: [Plugin.RemoveDrafts()],
