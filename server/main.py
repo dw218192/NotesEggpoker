@@ -29,7 +29,14 @@ handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
 
-rebuild_thread = UpdateThread(logger=app.logger, project_dir=PROJECT_FOLDER, dir_to_watch=SRC_FOLDER, dst_dir=DST_FOLDER, interval=1)
+rebuild_thread = UpdateThread(
+    logger=app.logger,
+    project_dir=PROJECT_FOLDER,
+    dir_to_watch=SRC_FOLDER,
+    dst_dir=DST_FOLDER,
+    interval=10,
+    rebuild_on_start=True,
+)
 rebuild_thread.daemon = True
 rebuild_thread.start()
 
@@ -46,28 +53,33 @@ def serve_static(filename: str | None = None):
     user_agent = request.user_agent.string
     app.logger.info(f"Client {client_ip} requested {filename} using {request.method}. User-Agent: {user_agent}")
     
-    if filename is None:
-        file_path = os.path.join(ROOT_FOLDER, "index.html")
+    if not filename:
+        folder_path = ROOT_FOLDER
+        file_path = "index.html"
     else:
-        file_path = os.path.join(ROOT_FOLDER, filename)
-        _, extension = os.path.splitext(filename)
-        if not extension:
-            # check if this is an existing html file
-            test_path = file_path + '.html'
-            if os.path.exists(test_path):
-                file_path = test_path
-            else:
-                # check if this is a folder containing an index.html
-                test_path = os.path.join(file_path, "index.html")
-                if os.path.exists(test_path):
-                    file_path = test_path
+        folder_path = ROOT_FOLDER
+        file_path = filename
+        _, ext = os.path.splitext(filename)
+        if not ext:
+            test_paths = [
+                (ROOT_FOLDER, filename + '.html'),
+                (os.path.join(ROOT_FOLDER, filename), "index.html")
+            ]
 
-    if not os.path.exists(file_path):
-        app.logger.warning(f"File not found: {file_path} (404 returned)")
+            for test_path in test_paths:
+                app.logger.info(f"trying {test_path} ...")
+                if os.path.exists(os.path.join(*test_path)):
+                    folder_path, file_path = test_path
+                    break
+                app.logger.info("not found")
+
+    full_path = os.path.join(folder_path, file_path)
+    if not os.path.exists(full_path):
+        app.logger.warning(f"File not found: {full_path} (404 returned)")
         return send_from_directory(ROOT_FOLDER, '404.html'), 404
 
-    app.logger.info(f"Serving file: {file_path}")
-    return send_from_directory(ROOT_FOLDER, file_path)
+    app.logger.info(f"Serving file: {full_path}")
+    return send_from_directory(folder_path, file_path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8081)
