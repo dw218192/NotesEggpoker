@@ -31,6 +31,18 @@ li.section-li {
   }
 }
 
+.section.folder-entry {
+  grid-template-columns: 6em 3fr;
+
+  & > .tags {
+    display: none;
+  }
+
+  & > .meta-placeholder {
+    visibility: hidden;
+  }
+}
+
 // modifications in popover context
 .popover .section {
   grid-template-columns: 6em 1fr !important;

@@ -2,23 +2,26 @@ import { ValidDateType } from "./components/Date"
 import { QuartzComponent } from "./components/types"
 import { PluginTypes } from "./plugins/types"
 import { Theme } from "./util/theme"
+import { ValidLocale } from "./i18n"
 
 export type Analytics =
   | null
   | {
-      provider: "plausible"
-    }
+    provider: "plausible"
+  }
   | {
-      provider: "google"
-      tagId: string
-    }
+    provider: "google"
+    tagId: string
+  }
   | {
-      provider: "umami"
-      websiteId: string
-    }
+    provider: "umami"
+    websiteId: string
+  }
 
 export interface GlobalConfiguration {
   pageTitle: string
+  /** Locale used for i18n strings and formatting */
+  locale: ValidLocale
   /** Whether to enable single-page-app style rendering. this prevents flashes of unstyled content and improves smoothness of Quartz */
   enableSPA: boolean
   /** Whether to display Wikipedia-style popovers when hovering over links */

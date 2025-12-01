@@ -25,12 +25,21 @@ export function byDateAndAlphabetical(
   }
 }
 
+type FolderAwareData = QuartzPluginData & { folderListEntry?: boolean }
+
+const isFolderEntry = (page: QuartzPluginData): page is FolderAwareData =>
+  Boolean((page as FolderAwareData).folderListEntry)
+
 type Props = {
   limit?: number
 } & QuartzComponentProps
 
 export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit }: Props) => {
-  let list = allFiles.sort(byDateAndAlphabetical(cfg))
+  const comparator = byDateAndAlphabetical(cfg)
+  const folderEntries = allFiles.filter(isFolderEntry).sort(comparator)
+  const noteEntries = allFiles.filter((page) => !isFolderEntry(page)).sort(comparator)
+
+  let list = [...folderEntries, ...noteEntries]
   if (limit) {
     list = list.slice(0, limit)
   }
@@ -40,14 +49,19 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit }: Pr
       {list.map((page) => {
         const title = page.frontmatter?.title
         const tags = page.frontmatter?.tags ?? []
+        const folderEntry = isFolderEntry(page)
 
         return (
           <li class="section-li">
-            <div class="section">
-              {page.dates && (
-                <p class="meta">
-                  <Date date={getDate(cfg, page)!} locale={cfg.locale} />
-                </p>
+            <div class={`section${folderEntry ? " folder-entry" : ""}`}>
+              {folderEntry ? (
+                <div class="meta meta-placeholder" aria-hidden="true" />
+              ) : (
+                page.dates && (
+                  <p class="meta">
+                    <Date date={getDate(cfg, page)!} locale={cfg.locale} />
+                  </p>
+                )
               )}
               <div class="desc">
                 <h3>
@@ -56,18 +70,20 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit }: Pr
                   </a>
                 </h3>
               </div>
-              <ul class="tags">
-                {tags.map((tag) => (
-                  <li>
-                    <a
-                      class="internal tag-link"
-                      href={resolveRelative(fileData.slug!, `tags/${tag}` as FullSlug)}
-                    >
-                      {tag}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              {!folderEntry && (
+                <ul class="tags">
+                  {tags.map((tag) => (
+                    <li>
+                      <a
+                        class="internal tag-link"
+                        href={resolveRelative(fileData.slug!, `tags/${tag}` as FullSlug)}
+                      >
+                        {tag}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </li>
         )
@@ -83,5 +99,17 @@ PageList.css = `
 
 .section > .tags {
   margin: 0;
+}
+
+.section.folder-entry {
+  grid-template-columns: 6em 3fr;
+}
+
+.section.folder-entry > .tags {
+  display: none;
+}
+
+.section.folder-entry > .meta-placeholder {
+  visibility: hidden;
 }
 `
