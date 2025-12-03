@@ -59,16 +59,32 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpt
       const allFiles = content.map((c) => c[1].data)
       const cfg = ctx.cfg.configuration
 
-      const folders: Set<SimpleSlug> = new Set(
-        allFiles.flatMap((data) => {
-          const slug = data.slug
-          const folderName = path.dirname(slug ?? "") as SimpleSlug
-          if (slug && folderName !== "." && folderName !== "tags") {
-            return [folderName]
+      const folders: Set<SimpleSlug> = new Set()
+      const addFolderAndAncestors = (folderName: SimpleSlug) => {
+        const normalized = stripSlashes(folderName)
+        if (!normalized || normalized === "." || normalized === "tags") {
+          return
+        }
+
+        const segments = normalized.split(path.posix.sep).filter((segment) => segment.length > 0)
+        for (let idx = 0; idx < segments.length; idx++) {
+          const ancestor = segments.slice(0, idx + 1).join(path.posix.sep) as SimpleSlug
+          if (ancestor === "tags") {
+            break
           }
-          return []
-        }),
-      )
+          folders.add(ancestor)
+        }
+      }
+
+      for (const data of allFiles) {
+        const slug = data.slug
+        if (!slug) {
+          continue
+        }
+
+        const folderName = path.dirname(slug) as SimpleSlug
+        addFolderAndAncestors(folderName)
+      }
 
       const folderDescriptions: Record<string, ProcessedContent> = Object.fromEntries(
         [...folders].map((folder) => [
