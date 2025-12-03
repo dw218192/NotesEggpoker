@@ -1,8 +1,9 @@
 from flask import Flask, send_from_directory, request, jsonify
-import logging
-from logging.handlers import RotatingFileHandler
 import os
 from auto_note_rebuild import UpdateThread
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -13,20 +14,6 @@ SRC_FOLDER = r"C:\Users\Administrator\Dropbox\NOTES\obsidian\Coding"
 DST_FOLDER = r"C:\Users\Administrator\Desktop\servers\NotesEggpoker\content"
 # folder for publishing the content
 ROOT_FOLDER = r"C:\Users\Administrator\Desktop\servers\NotesEggpoker\public"
-LOG_FILE = r"C:\Users\Administrator\Desktop\servers\logs\NotesServer.log"
-
-# Create a rotating file handler
-handler = RotatingFileHandler(LOG_FILE, maxBytes=10000, backupCount=3)
-
-# Set the logging level and format
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter(
-    "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
-)
-handler.setFormatter(formatter)
-
-# Add the handler to the Flask app's logger
-app.logger.addHandler(handler)
 
 
 rebuild_thread = UpdateThread(
@@ -35,7 +22,7 @@ rebuild_thread = UpdateThread(
     dir_to_watch=SRC_FOLDER,
     dst_dir=DST_FOLDER,
     interval=4 * 60 * 60,  # 4 hours
-    rebuild_on_start=True,
+    rebuild_on_start=False,
 )
 rebuild_thread.daemon = True
 rebuild_thread.start()
